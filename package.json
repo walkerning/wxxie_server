@@ -1,0 +1,43 @@
+{
+  "name": "wxxie_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.18.2",
+    "bookshelf": "^0.13.3",
+    "compression": "^1.7.2",
+    "connect-redis": "^3.3.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "grunt": "^1.0.2",
+    "grunt-contrib-watch": "^1.0.1",
+    "grunt-execute": "^0.2.2",
+    "grunt-express-server": "^0.5.4",
+    "helmet": "^3.12.0",
+    "knex": "^0.14.6",
+    "lodash": "^4.17.5",
+    "morgan": "^1.9.0",
+    "mysql": "^2.15.0",
+    "password-validator": "^2.1.2",
+    "util": "^0.10.3",
+    "validator": "^9.4.1",
+    "wafer-node-session": "^1.0.10",
+    "winston": "^2.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walkerning/wxxie_server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/walkerning/wxxie_server/issues"
+  },
+  "homepage": "https://github.com/walkerning/wxxie_server#readme"
+}
