@@ -10,31 +10,42 @@ function infoMe(req, res, next) {
     });
 }
 
+function infoUser(req, res, next) {
+  return models.User.getById(req.params.userId)
+    .then(function(user) {
+      res.status(200).json(user.toJSON());
+    });
+}
+
 function listTasks(req, res, next) {
-  return req.user.fetch({ withRelated: ["tasks"] })
+  return models.User.getById(req.params.userId, {
+    fetchOptions: {
+      withRelated: ["tasks"]
+    }
+  })
     .then(function(user) {
       res.status(200).json(user.related("tasks").toJSON());
     });
 }
 
 function getTask(req, res, next) {
-  return req.user.fetch({ withRelated: ["tasks"] })
+  return models.User.getById(req.params.userId, {
+    fetchOptions: {
+      withRelated: ["tasks"]
+    }
+  })
     .then(function(user) {
-      return user.related("tasks")
-        .query({ where: { "id": req.params.taskId } })
-        .fetch()
-        .then(function(c) {
-          var cjson = c.toJSON();
-          if (cjson.length == 0) {
-            return Promise.reject(new errors.NotFoundError());
-          }
-          res.status(200).json(cjson[0]);
+      return user.getTask(req.params.taskId)
+        .then((task) => { 
+          res.status(200).json(task.toJSON());
         });
     });
 }
 
+
 module.exports = {
   infoMe: infoMe,
+  infoUser: infoUser,
   listTasks: listTasks,
   getTask: getTask
 };

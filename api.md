@@ -84,9 +84,9 @@ API
   * **返回**: [Task]
 * ``POST /api/v1/users/{user_id}/tasks``: 创建一个新task
   * **权限**: ``user_id == me``
-  * **条件**: ``len(user.tasks) < user.quota
+  * **条件**: ``len(user.tasks) < user.quota``
   * **返回**: Task
-* ``PUT /api/v1/users/{user_id}/tasks/{task_id}``: 修改任务信息
+* ``PUT /api/v1/users/{user_id}/tasks/{task_id}``: 修改任务信息, 不能改state
   * **权限**: ``user_id == me``
   * **条件**: ``task.state == "incompelete"``
   * **返回**: Task

@@ -11,6 +11,9 @@ module.exports = function(grunt) {
         options: {
           args: ["--reinit"]
         }
+      },
+      initDb: {
+        src: ["src/data/init/init*.js"]
       }
     },
     // ### run express server
@@ -70,8 +73,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-watch");
 
   // Tasks
-  grunt.registerTask("database", ["execute:migration"]);
+  grunt.registerTask("database", ["execute:migration", "execute:initDb"]);
   grunt.registerTask("remigration", ["execute:remigration"]);
+  grunt.registerTask("initdb", ["execute:initDb"]);
   grunt.registerTask("dev", ["express:dev", "watch:express_dev"]);
   grunt.registerTask("prod", ["express:prod", "watch:express_prod"]);
 };

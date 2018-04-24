@@ -2,7 +2,8 @@ var l = require("lodash");
 
 var modelNames = [
   "users",
-  "tasks"
+  "tasks",
+  "permissions"
 ];
 
 exports = module.exports;

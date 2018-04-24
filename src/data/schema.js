@@ -1,5 +1,5 @@
 module.exports = {
-  tableNames: ["users", "tasks"],
+  tableNames: ["permissions", "users", "tasks", "permissions_users"],
 
   users: {
     id: {
@@ -89,7 +89,7 @@ module.exports = {
     },
     shoe_model: {
       type: "string",
-      nullable: false
+      nullable: true
     },
     comment: {
       type: "text",
@@ -112,6 +112,10 @@ module.exports = {
       }
     },
 
+    run_time: {
+      type: "datetime",
+      nullable: true,
+    },
     start_time: {
       type: "datetime",
       nullable: true,
@@ -128,6 +132,50 @@ module.exports = {
     updated_at: {
       type: "dateTime",
       nullable: true
+    }
+  },
+
+  permissions: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+    name: {
+      type: "string",
+      maxlength: 36,
+      nullable: false,
+      unique: true
+    },
+    description: {
+      type: "string",
+      maxlength: 150,
+      nullable: false
+    },
+
+    created_at: {
+      type: "dateTime",
+      nullable: false
+    },
+    updated_at: {
+      type: "dateTime",
+      nullable: true
+    }
+  },
+
+  permissions_users: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+    user_id: {
+      type: "integer",
+      nullable: false
+    },
+    permission_id: {
+      type: "integer",
+      nullable: false
     }
   }
 };

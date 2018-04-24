@@ -8,7 +8,9 @@ module.exports = function readUser(req, res, next) {
     return models.User.forge({
       openId: req.session.userInfo.openId
     })
-      .fetch()
+      .fetch({
+        withRelated: ["permissions"]
+      })
       .then(function loadContextUser(user) {
         if (!user) {
           // Create user

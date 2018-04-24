@@ -55,6 +55,23 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
     });
   },
 
+  permittedAttributes: function permittedAttribute() {
+    return _.keys(schema[this.tableName]);
+  },
+
+  permittedUpdateAttributes: function permittedUpdateAttribute() {
+    // Default: return all non-auto attributes
+    return _.difference(this.permittedAttributes(), this.autoAttributes());
+  },
+
+  autoAttributes: function autoAttributes() {
+    return [
+      "id",
+      "created_at",
+      "updated_at"
+    ]
+  },
+
   // `initialize` - constructor for model creation
   initialize: function initialize() {
     this.on("saving", function onSaving() {
@@ -73,13 +90,13 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
 
   // Database interaction event handling
   onValidate: function onValidate() {
-    return validation.validateSchema(this.tableName, this.toJSON(), this.constructor.autoAttributes());
+    return validation.validateSchema(this.tableName, this.toJSON(), this.autoAttributes());
   },
 
 
   onSaving: function onSaving(newObj, attr, options) {
     // Remove any properties which don't belong on the model
-    this.attributes = this.pick(this.constructor.permittedAttributes());
+    this.attributes = this.pick(this.permittedAttributes());
   },
 
 
@@ -87,8 +104,11 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
   /** 
    * @returns {Promise<Model>}
    */
-  update: function update(body) {
-    var newBody = _.pick(body, this.constructor.permittedUpdateAttributes());
+  update: function update(body, context_user, nocheck) {
+    var newBody = body;
+    if (!nocheck) {
+      var newBody = _.pick(body, this.permittedUpdateAttributes(context_user));
+    }
     if (_.isEmpty(newBody)) {
       // Avoid unneccessary update to `updated_at` field.
       return Promise.resolve(null);
@@ -96,18 +116,6 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
     return this.save(newBody, {});
   }
 }, {
-  permittedAttributes: function permittedAttribute() {
-    return _.keys(schema[this.prototype.tableName]);
-  },
-
-  autoAttributes: function autoAttributes() {
-    return [
-      "id",
-      "created_at",
-      "updated_at"
-    ]
-  },
-
   /**
    * @returns {Promise<Model>}
    */
@@ -135,7 +143,6 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
    * @returns {Promise<Model>}
    */
   create: function create(body) {
-    var body = _.pick(body, this.permittedAttributes());
     return this.forge(body).save({}, {
       method: "insert"
     });
