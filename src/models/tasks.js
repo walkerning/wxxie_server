@@ -27,24 +27,25 @@ var Task = bookshelfInst.Model.extend({
       return fields;
     } else if (contextUser.get("id") == this.get("user_id")) {
       // contextUser == this
-      return _.difference(fields, ["answer", "state", "run_time", "start_time", "finish_time"]);
+      return _.difference(fields, ["answer", "state", "run_time", "start_time", "finish_time", "log"]);
     }
     return [];
   },
 
   validateForRun: function validateForRun() {
-    // if (this.get("state") !== "incomplete") {
-    //   // TODO: multi-language error information?
-    //   return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because it has been already arranged for running or has finished." }));
-    // }
+    if (this.get("state") !== "incomplete") {
+      // TODO: multi-language error information?
+      return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because it has been already arranged for running or has finished." }));
+    }
     if (!this.get("shoe_model")) {
-      return new errors.ValidationError({ message: "Cannot run this task, because 'shoe_model' field is needed." });
+      return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'shoe_model' field is needed." }));
     }
     // check for filesystem existence. 
     // TODO: different check for different meta_tag or shoe model maybe. Move this check utility to meta handler.
     var fs_basename = process.env.FS_PIC_BASENAME;
     var fs_path = path.join(fs_basename, _.toString(this.get("user_id")), _.toString(this.get("id")));
-    return Promise.map(["appear", "tag", "stitch", "pad", "side_tag", "seal"],
+    // return Promise.map(["appear", "tag", "stitch", "pad", "side_tag", "seal"],
+    return Promise.map(["appear", "tag"],
                        (n) => {
                          // **TODO**: only support .png now..
                          return fs.statAsync(path.join(fs_path, n + ".png"));

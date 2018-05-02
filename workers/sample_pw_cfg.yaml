@@ -1,0 +1,28 @@
+name: sample_debug_worker
+
+exchange:
+  exchange: ex.wxxie.debug.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+queue:
+  queue: q.wxxie.debug.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+
+queue_limit: 100
+
+answer_exchange:
+  exchange: ex.wxxie.debug.answer.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+answer_queue:
+  queue: q.wxxie.debug.answer.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+

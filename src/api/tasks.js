@@ -10,13 +10,29 @@ var multiparty = Promise.promisifyAll(require('multiparty'), {
 var models = require("../models");
 var logging = require("../logging")
 var errors = require("../errors");
+var rabbot_prom = require("../mq/rabbot");
+var mq_cfg = require("../config").mq;
 
 function createTask(req, res, next) {
-  return models.Task.create({
-    user_id: req.params.userId,
-    meta_tag: req.body["meta_tag"],
-    state: "incomplete"
+  return models.User.getById(req.params.userId, {
+    fetchOptions: {
+      withRelated: ["tasks"]
+    }
   })
+    .then(function(user) {
+      var quota = user.get("quota");
+      var now_num = user.related("tasks").toJSON().length;
+      if (now_num >= quota) {
+        return Promise.reject(new errors.ValidationError({ message: `Quota exceed, you can only create ${quota} (now ${now_num})` }))
+      }
+    })
+    .then(() => {
+      return models.Task.create({
+        user_id: req.params.userId,
+        meta_tag: req.body["meta_tag"],
+        state: "incomplete"
+      });
+    })
     .then(function(task) {
       res.status(201).json(task.toJSON());
     });
@@ -46,14 +62,31 @@ function runTask(req, res, next) {
       var [user, task] = r;
       return task.validateForRun()
         .then(() => {
-          // **TODO**: Put the task meta info into queue
-          console.log("**TODO**: PUT the task into the queue!")
-          var now = new Date();
-          return task.update({"state": "waiting", "run_time": now}, req.user, true)
-            .then((task) => {
-              // **TODO**: PUT the task meta information
-              res.status(200).json(task.toJSON());
+          console.log("PUT the task into the queue!")
+          var start = rabbot_prom.then((rabbot) => {
+            return rabbot.publish(mq_cfg["exchanges"][0]["name"], {
+              type: "wxxie.detectMessage",
+              contentType: "application/json",
+              routingKey: "",
+              body: {
+                user_id: user.get("id"),
+                task_id: task.get("id"),
+                meta_tag: task.get("meta_tag"),
+                shoe_model: task.get("shoe_model")
+              }
+              // **TODO**: gracefully handle timeout
+              // expiresAfter: 10000,
+              // timeout: 10000
             });
+          });
+          return start.then((mq_r) => {
+            var now = new Date();
+            return task.update({"state": "waiting", "run_time": now}, req.user, true)
+              .then((task) => {
+                // **TODO**: PUT the task meta information
+                res.status(200).json(task.toJSON());
+              });
+          });
         });
     })
 }

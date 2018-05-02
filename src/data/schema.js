@@ -101,8 +101,12 @@ module.exports = {
       nullable: false,
       defaultTo: "incomplete",
       validations: {
-        isIn: [["incomplete", "waiting", "finished"]]
+        isIn: [["incomplete", "waiting", "finished", "failed"]]
       }
+    },
+    log: {
+      type: "text",
+      nullable: true
     },
     answer: {
       type: "string",
