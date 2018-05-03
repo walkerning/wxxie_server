@@ -36,6 +36,8 @@ apiRouter.put("/users/:userId/tasks/:taskId/run", permit(["me"]), catchError(tas
 
 apiRouter.post("/users/:userId/tasks/:taskId/files", permit(["me"]), catchError(tasks.uploadTaskFile));
 
+apiRouter.get("/users/:userId/tasks/:taskId/files/:fileType", permit(["me"]), catchError(tasks.downloadTaskFile));
+
 // TODO: after task run, should we use admin API, or directly access the database and send notification... It seems using admin API will be a more scalable way, with well-centralized control... To realize admin page, permission system, must be introduced
 
 module.exports = apiRouter;

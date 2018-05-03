@@ -8,6 +8,9 @@ if (process.env.NODE_ENV == "development") {
       database: "test_wxxie_database",
       charset: "utf8"
     }
+    // use default pool configuration for now...
+    // pool: {
+    // }
   };
 } else {
   module.exports = {

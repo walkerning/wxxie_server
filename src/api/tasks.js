@@ -2,6 +2,7 @@ var _ = require("lodash");
 var path = require("path");
 var Promise = require("bluebird");
 var shell = require("shelljs");
+var sanitize = require("sanitize-filename");
 var fs = Promise.promisifyAll(require("fs"));
 var multiparty = Promise.promisifyAll(require('multiparty'), {
   multiArgs: true
@@ -136,9 +137,40 @@ function uploadTaskFile(req, res, next) {
     });
 }
 
+function downloadTaskFile(req, res, next) {
+  return models.User.getTaskAndUser(req.params.userId, req.params.taskId)
+    .then((r) => {
+      var [user, task] = r;
+      var fs_basename = process.env.FS_PIC_BASENAME;
+      var type_name = req.params.fileType;
+      if (!_.includes(["appear", "tag", "stitch", "pad", "side_tag", "seal"], type_name)) {
+        return Promise.reject(new errors.ValidationError({ message: "'type' field should be in ['appear', 'tag', 'stitch', 'pad', 'side_tag', 'seal'] "}));
+      }
+      var fname = sanitize(type_name + ".png");
+      var fs_path = path.join(fs_basename, _.toString(task.get("user_id")), _.toString(task.get("id")), fname);
+      console.log(fs_path)
+      return fs.statAsync(fs_path)
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            res.download(fs_path, fname, (err) => {
+              if (err) {
+                reject(err)
+              } else {
+                resolve()
+              }
+            })
+          });
+        })
+        .catch((err) => {
+          res.status(204).end()
+        });
+    });
+}
+
 module.exports = {
   createTask: createTask,
   updateTask: updateTask,
   runTask: runTask,
-  uploadTaskFile: uploadTaskFile
+  uploadTaskFile: uploadTaskFile,
+  downloadTaskFile: downloadTaskFile
 };
