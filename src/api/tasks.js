@@ -73,7 +73,8 @@ function runTask(req, res, next) {
                 user_id: user.get("id"),
                 task_id: task.get("id"),
                 meta_tag: task.get("meta_tag"),
-                shoe_model: task.get("shoe_model")
+                shoe_model: task.get("shoe_model"),
+                imgdir: task.imageDir()
               }
               // **TODO**: gracefully handle timeout
               // expiresAfter: 10000,
@@ -111,8 +112,7 @@ function uploadTaskFile(req, res, next) {
             var type_name = fields["type"][0];
             console.log("fields: ", fields, "files: ", files, "typename: ", type_name)
 
-            var fs_basename = process.env.FS_PIC_BASENAME;
-            var fs_path = path.join(fs_basename, _.toString(task.get("user_id")), _.toString(task.get("id")));
+            var fs_path = task.imageDir();
             if (!fs.existsSync(fs_path)) {
               shell.mkdir("-p", fs_path);
             }

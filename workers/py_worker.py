@@ -1,12 +1,23 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""
+This is a simple sample. Not flexible enough for deployment now.
+
+**TODO**: 
+* Should run in a virtualenv to enable env/dependency management... Maybe using docker?
+* Worker auto start/scale. Need an zoo-keeper like daemon.
+"""
+
 from __future__ import print_function
 
-import argparse
+import os
 import sys
 import time
 import puka
 import time
 import json
 import yaml
+import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("cfg", help="worker config file")
@@ -15,6 +26,34 @@ args = parser.parse_args()
 
 with open(args.cfg, "r") as f:
     cfg = yaml.load(f)
+
+worker_name = cfg["name"]
+
+worker_cfg = cfg.get("worker", None)
+if worker_cfg is not None:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    modname = worker_cfg["module"]
+    try:
+        mod = __import__("wxxie_workers." + modname, fromlist=["*"])
+    except ImportError as e:
+        print("ERROR: Load worker module {} failed: {}".format(modname, e))
+        sys.exit(1)
+    assert hasattr(mod, "__WORKER__"), "ERROR: The worker class should be stored in `__WORKER__` variable"
+    worker_cls = getattr(mod, "__WORKER__")
+    _cfg = worker_cfg.get("cfg", {})
+    _cfg_file = worker_cfg.get("cfg_file", None)
+    _worker_cfg = {}
+    if _cfg_file:
+        with open(_cfg_file, "r") as f:
+            _worker_cfg = yaml.load(f)
+    _worker_cfg.update(_cfg)
+    worker = worker_cls(_worker_cfg)
+else:
+    worker = object()
+    def _stub_run(self, body):
+        time.sleep(5) # fake to be working for 5 seconds
+        return "true"
+    object.run = _stub_run
 
 if args.debug:
     uri_spec = {
@@ -55,18 +94,18 @@ while 1:
     print("waiting...")
     receive_message = client.wait(receive_promise)
     body = json.loads(receive_message['body'])
-    print("receiver {} [x] receive:".format(sys.argv[1]), receive_message)
+    print("receiver {} [x] receive:".format(worker_name), receive_message)
     print("\tbody: ", body)
     start_time = int(time.time())
-    time.sleep(5) # fake to be working now
+    answer = worker.run(body)
     finish_time = int(time.time())
     client.wait(client.basic_publish(exchange=ans_ex_name,
                                      routing_key=ans_rkey,
                                      body=json.dumps({
                                          "user_id": body["user_id"],
                                          "task_id": body["task_id"],
-                                         "answer": "true",
-                                         "state": "finished", # can be failed/finished
+                                         "answer": answer,
+                                         "state": "finished", # TODO: handle failure
                                          "start_time": start_time,
                                          "finish_time": finish_time,
                                          "log": ""

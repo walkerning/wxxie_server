@@ -1,0 +1,2 @@
+puka==0.0.7
+opencv-python

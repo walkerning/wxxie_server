@@ -32,6 +32,11 @@ var Task = bookshelfInst.Model.extend({
     return [];
   },
 
+  imageDir: function imageDir() {
+    var fs_basename = process.env.FS_PIC_BASENAME;
+    return path.join(fs_basename, _.toString(this.get("user_id")), _.toString(this.get("id")));
+  },
+
   validateForRun: function validateForRun() {
     if (this.get("state") !== "incomplete") {
       // TODO: multi-language error information?
@@ -42,8 +47,7 @@ var Task = bookshelfInst.Model.extend({
     }
     // check for filesystem existence. 
     // TODO: different check for different meta_tag or shoe model maybe. Move this check utility to meta handler.
-    var fs_basename = process.env.FS_PIC_BASENAME;
-    var fs_path = path.join(fs_basename, _.toString(this.get("user_id")), _.toString(this.get("id")));
+    var fs_path = this.imageDir();
     // return Promise.map(["appear", "tag", "stitch", "pad", "side_tag", "seal"],
     return Promise.map(["appear", "tag"],
                        (n) => {
