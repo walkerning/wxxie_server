@@ -96,9 +96,9 @@ while 1:
     body = json.loads(receive_message['body'])
     print("receiver {} [x] receive:".format(worker_name), receive_message)
     print("\tbody: ", body)
-    start_time = int(time.time())
+    start_time = round(time.time() * 1000)
     answer = worker.run(body)
-    finish_time = int(time.time())
+    finish_time = round(time.time() * 1000)
     client.wait(client.basic_publish(exchange=ans_ex_name,
                                      routing_key=ans_rkey,
                                      body=json.dumps({

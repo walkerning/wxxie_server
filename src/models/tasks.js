@@ -27,7 +27,7 @@ var Task = bookshelfInst.Model.extend({
       return fields;
     } else if (contextUser.get("id") == this.get("user_id")) {
       // contextUser == this
-      return _.difference(fields, ["answer", "state", "run_time", "start_time", "finish_time", "log"]);
+      return _.difference(fields, ["answer", "state", "run_time", "start_time", "finish_time", "log", "form_id"]);
     }
     return [];
   },

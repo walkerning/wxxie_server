@@ -75,6 +75,10 @@ module.exports = {
       nullable: false,
       primary: true
     },
+    task_name: {
+      type: "string",
+      nullable: false
+    },
     user_id: {
       type: "integer",
       nullable: false,
@@ -93,6 +97,11 @@ module.exports = {
     },
     comment: {
       type: "text",
+      nullable: true,
+      maxlength: 100
+    },
+    form_id: {
+      type: "string",
       nullable: true
     },
 

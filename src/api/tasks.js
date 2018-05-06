@@ -31,7 +31,8 @@ function createTask(req, res, next) {
       return models.Task.create({
         user_id: req.params.userId,
         meta_tag: req.body["meta_tag"],
-        state: "incomplete"
+        state: "incomplete",
+        task_name: "Task untitled" // default task name
       });
     })
     .then(function(task) {
@@ -64,21 +65,27 @@ function runTask(req, res, next) {
       return task.validateForRun()
         .then(() => {
           console.log("PUT the task into the queue!")
-          var start = rabbot_prom.then((rabbot) => {
-            return rabbot.publish(mq_cfg["exchanges"][0]["name"], {
-              type: "wxxie.detectMessage",
-              contentType: "application/json",
-              routingKey: "",
-              body: {
-                user_id: user.get("id"),
-                task_id: task.get("id"),
-                meta_tag: task.get("meta_tag"),
-                shoe_model: task.get("shoe_model"),
-                imgdir: task.imageDir()
-              }
-              // **TODO**: gracefully handle timeout
-              // expiresAfter: 10000,
-              // timeout: 10000
+          var start = Promise.resolve(null);
+          if (req.body.form_id) {
+            start = task.update({ form_id: req.body.form_id }, req.user, true)
+          }
+          start = start.then(() => {
+            return rabbot_prom.then((rabbot) => {
+              return rabbot.publish(mq_cfg["exchanges"][0]["name"], {
+                type: "wxxie.detectMessage",
+                contentType: "application/json",
+                routingKey: "",
+                body: {
+                  user_id: user.get("id"),
+                  task_id: task.get("id"),
+                  meta_tag: task.get("meta_tag"),
+                  shoe_model: task.get("shoe_model"),
+                  imgdir: task.imageDir()
+                }
+                // **TODO**: gracefully handle timeout
+                // expiresAfter: 10000,
+                // timeout: 10000
+              });
             });
           });
           return start.then((mq_r) => {

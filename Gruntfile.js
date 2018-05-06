@@ -24,6 +24,12 @@ module.exports = function(grunt) {
           node_env: "development"
         }
       },
+      test: {
+        options: {
+          script: "src/devServer.js",
+          node_env: "test"
+        }
+      },
       prod: {
         options: {
           script: "src/devServer.js",
@@ -45,6 +51,20 @@ module.exports = function(grunt) {
           "src/data/*.js"
         ],
         tasks: ["express:dev"],
+        options: {
+          spawn: false // Without this option specified express won't be reloaded
+        }
+      },
+      express_test: {
+        files: [
+          "src/*.js",
+          "src/api/*.js",
+          "src/models/*.js",
+          "src/middlewares/*.js",
+          "src/configs/*.js",
+          "src/data/*.js"
+        ],
+        tasks: ["express:test"],
         options: {
           spawn: false // Without this option specified express won't be reloaded
         }
@@ -77,5 +97,6 @@ module.exports = function(grunt) {
   grunt.registerTask("remigration", ["execute:remigration"]);
   grunt.registerTask("initdb", ["execute:initDb"]);
   grunt.registerTask("dev", ["express:dev", "watch:express_dev"]);
+  grunt.registerTask("test", ["express:test", "watch:express_test"]);
   grunt.registerTask("prod", ["express:prod", "watch:express_prod"]);
 };
