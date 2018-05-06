@@ -10,6 +10,35 @@ import numpy as np
 
 here = os.path.dirname(os.path.abspath(__file__))
 
+log_name_dict = {
+    "tag": "球鞋鞋标",
+    "stitch": "中底走线",
+    "pad": "球鞋鞋垫",
+    "side_tag": "鞋盒侧标"
+}
+
+def get_crop_sizes(h, w, crop_cfg):
+    assert crop_cfg["type"] in {"ratio_list", "num"}
+    crop_sizes = []
+    if crop_cfg["type"] == "ratio_list":
+        for sz in crop_cfg["ratio_list"]:
+            i, j, m, n = sz
+            crop_sizes.append([int(i*h), int(i*w), int(m*h), int(n*w)])
+    elif crop_cfg["type"] == "num": # preserve the short edge
+        num = crop_cfg["num"]
+        if w > h:
+            short_edge = h
+            long_edge = w
+        else:
+            short_edge = w
+            long_edge = h
+        every = (long_edge - short_edge) / (num - 1)
+        for start in np.array(range(num)) * every:
+            crop_size = ([0, start] if w > h else [start, 0]) + [short_edge, short_edge]
+            crop_sizes.append(crop_size)
+    return crop_sizes
+
+
 class SingleNet(object):
     default_cfg = {
         "caffe_path": None,
@@ -17,12 +46,19 @@ class SingleNet(object):
         "model": os.path.join(here, "resnet18_finetune_xiebiao_duours_0502_iter_6000.caffemodel"),
         "gpu": None,
 
-        "type": "tag",
-        "thres": 0.5
+        "type": ["tag"],
+        "num_light": 3,
+        "crop_cfg": {
+            "type": "num",
+            "num": 10
+        }, # type can be one of `num`, `ratio_list`
+        "thres": 0.5,
     }
     def __init__(self, cfg):
         self.cfg = copy.deepcopy(self.default_cfg)
         self.cfg.update(cfg)
+        print("Worker configuration:")
+        print("\n".join(["{:16}: {:10}".format(k, v) for k, v in sorted(self.cfg.iteritems(), key=lambda x: x[0])]))
         self.init()
         
     def init(self):
@@ -74,35 +110,51 @@ class SingleNet(object):
         return img  
 
     def run(self, body):
-        imgpath = body["imgdir"]
-        imgpath = os.path.join(imgpath, self.cfg["type"] + ".png")
-        return self.test_xiebiao(imgpath)
+        imgdir = body["imgdir"]
+        res = []
+        for tp in self.cfg["type"]:
+            # TODO: need a second level model?
+            if isinstance(tp, (tuple, list)):
+                tp, ind = tp
+            else:
+                ind = 0
+            imgpath = os.path.join(imgdir, tp + ".png")
+            an, score = self.test_multicrop(imgpath, ind)
+            print(tp, "true" if an else "fake", score)
+            res.append(an)
+        ans = "true" if np.all(res) else "fake"
+        log = "\n".join(["{:10}: {}".format(log_name_dict[n if not isinstance(n, (tuple, list)) else n[0]], "true" if an else "fake") for n, an in zip(self.cfg["type"], res)])
+        return ans, log
 
-    def test_xiebiao(self, imgpath):
+    def test_multicrop(self, imgpath, ind=0):
         thres = self.cfg["thres"]
         img = cv2.imread(imgpath)
         assert img is not None, imgpath
 
-        crops = [[0, 0, 0.9, 0.9], [0.1, 0.1, 0.9, 0.9], [0.1, 0.1, 0.8, 0.8], [0, 0, 1, 1], [0.1, 0, 0.9, 0.9], [0, 0.1, 0.9, 0.9]]
         imgs = list()
         h1, w1, _ = img.shape
+        crops = get_crop_sizes(h1, w1, self.cfg["crop_cfg"])
         for index, crop in enumerate(crops):
-            [i, j, m, n] = crop
-            img_crop = self.imcrop(img, int(i*h1), int(i*w1), int(m*h1), int(n*w1))
+            img_crop = self.imcrop(img, *crop)
             img_re = self.imresize(img_crop, 224, 224)
             imgs.append(img_re)
-            for index2 in range(3):
+            for index2 in range(self.cfg["num_light"]):
                 img_l = self.light(img_re)
                 imgs.append(img_l)
-        score = 0.
+        score_true = 0.
+        score_fake = 0.
         for im in imgs:
             prob = self.test(img=im)[0]
-            score += prob[1]
-        score /= len(imgs)
-        result = "fake"
+            score_fake += prob[ind * 2]
+            score_true += prob[ind * 2 + 1]
+        score_fake /= len(imgs)
+        score_true /= len(imgs)
+        _norm = score_fake + score_true
+        score = score_true / _norm
+        result = 0 # fake
         if score > thres:
-            result = "true"
-        print("result: {}\tscore: {}".format(result, score))
-        return result
+            result = 1 # true
+        # print("result: {}\tscore: {}".format("true" if result else "fake", score))
+        return result, score
 
 __WORKER__ = SingleNet

@@ -97,7 +97,7 @@ while 1:
     print("receiver {} [x] receive:".format(worker_name), receive_message)
     print("\tbody: ", body)
     start_time = round(time.time() * 1000)
-    answer = worker.run(body)
+    answer, log = worker.run(body)
     finish_time = round(time.time() * 1000)
     client.wait(client.basic_publish(exchange=ans_ex_name,
                                      routing_key=ans_rkey,
@@ -108,7 +108,7 @@ while 1:
                                          "state": "finished", # TODO: handle failure
                                          "start_time": start_time,
                                          "finish_time": finish_time,
-                                         "log": ""
+                                         "log": log
                                      })))
     client.basic_ack(receive_message)
 
