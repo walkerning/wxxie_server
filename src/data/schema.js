@@ -115,7 +115,8 @@ module.exports = {
     },
     log: {
       type: "text",
-      nullable: true
+      nullable: true,
+      maxlength: 1000
     },
     answer: {
       type: "string",

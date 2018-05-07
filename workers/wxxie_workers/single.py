@@ -53,6 +53,8 @@ class SingleNet(object):
             "num": 10
         }, # type can be one of `num`, `ratio_list`
         "thres": 0.5,
+        "not_valid_thres": 0.5,
+        "not_valid_num_thres": 2 # when there are number of crops above this threshold whose `max_ind` is not consistent with it type class, mark it as invalid
     }
     def __init__(self, cfg):
         self.cfg = copy.deepcopy(self.default_cfg)
@@ -107,11 +109,23 @@ class SingleNet(object):
         hsv[:,:,1] = hsv[:,:,1]*(0.5+ np.random.random()*0.5)
         hsv[:,:,2] = hsv[:,:,2]*(0.6+ np.random.random()*0.4)
         img = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
-        return img  
+        return img 
+
+    def _get_log(self, tp_lst, res, valid_res):
+        log_lst = []
+        for n, r, vr in zip(tp_lst, res, valid_res):
+            if isinstance(n, (tuple, list)):
+                n = n[0]
+            if vr:
+                log_lst.append("{:10}: {} {}".format(n, "might be valid", "true" if r else "fake"))
+            else:
+                log_lst.append("{:10}: {}".format(n, "not valid picture!"))
+        return "\n".join(log_lst)
 
     def run(self, body):
         imgdir = body["imgdir"]
         res = []
+        valid_res = []
         for tp in self.cfg["type"]:
             # TODO: need a second level model?
             if isinstance(tp, (tuple, list)):
@@ -119,11 +133,14 @@ class SingleNet(object):
             else:
                 ind = 0
             imgpath = os.path.join(imgdir, tp + ".png")
-            an, score = self.test_multicrop(imgpath, ind)
-            print(tp, "true" if an else "fake", score)
+            an, score, valid = self.test_multicrop(imgpath, ind)
+            print(tp, "true" if an else "fake", "valid" if valid else "notvalid", score)
             res.append(an)
+            valid_res.append(valid)
         ans = "true" if np.all(res) else "fake"
-        log = "\n".join(["{:10}: {}".format(log_name_dict[n if not isinstance(n, (tuple, list)) else n[0]], "true" if an else "fake") for n, an in zip(self.cfg["type"], res)])
+        if not np.all(valid_res):
+            ans = "not_sure"
+        log = self._get_log(self.cfg["type"], res, valid_res)
         return ans, log
 
     def test_multicrop(self, imgpath, ind=0):
@@ -143,10 +160,15 @@ class SingleNet(object):
                 imgs.append(img_l)
         score_true = 0.
         score_fake = 0.
+        not_valid = 0
         for im in imgs:
             prob = self.test(img=im)[0]
             score_fake += prob[ind * 2]
             score_true += prob[ind * 2 + 1]
+            max_ind = np.argmax(prob) / 2
+            print(prob[ind*2:ind*2+2], ind, max_ind)
+            if max_ind != ind or max(prob[ind * 2], prob[ind * 2 + 1]) < self.cfg["not_valid_thres"]:
+                not_valid += 1
         score_fake /= len(imgs)
         score_true /= len(imgs)
         _norm = score_fake + score_true
@@ -155,6 +177,6 @@ class SingleNet(object):
         if score > thres:
             result = 1 # true
         # print("result: {}\tscore: {}".format("true" if result else "fake", score))
-        return result, score
+        return result, score, not_valid < self.cfg["not_valid_num_thres"]
 
 __WORKER__ = SingleNet
