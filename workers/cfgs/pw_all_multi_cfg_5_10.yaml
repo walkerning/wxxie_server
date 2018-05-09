@@ -1,0 +1,57 @@
+name: sample_single_all_worker
+
+exchange:
+  exchange: ex.wxxie.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+queue:
+  queue: q.wxxie.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+
+queue_limit: 100
+
+answer_exchange:
+  exchange: ex.wxxie.answer.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+answer_queue:
+  queue: q.wxxie.answer.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+
+worker: 
+  module: multi
+  cfg:
+    models:
+      - module: single_caffe
+        cfg:
+          name: "not_so_good_model_for_other"
+          log_level: "2"
+          caffe_path: /xiedata/caffe/python
+          type: [[appear, 2], [stitch, 5], [pad, 3], [tongue, 0]]
+          num_light: 0
+          crop_cfg:
+            type: "num"
+            num: 10
+          deploy: /xiedata/models/alexnet_deploy.prototxt
+          model: /xiedata/models/alexnet_finetune_zhenghe_xxcxxz_0421_iter_8000.caffemodel
+        cfg_file:
+      - module: single_caffe
+        cfg:
+          name: "model_for_tag"
+          log_level: "2"
+          type: [tag]
+          num_light: 3
+          crop_cfg:
+            type: ratio_list
+            ratio_list: [[0, 0, 0.9, 0.9], [0.1, 0.1, 0.9, 0.9], [0.1, 0.1, 0.8, 0.8], [0, 0, 1, 1], [0.1, 0, 0.9, 0.9], [0, 0.1, 0.9, 0.9]]
+          deploy: /xiedata/models/resnet18_deploy.prototxt
+          model: /xiedata/models/resnet18_finetune_xiebiao_duours_0502_iter_6000.caffemodel
+        cfg_file:

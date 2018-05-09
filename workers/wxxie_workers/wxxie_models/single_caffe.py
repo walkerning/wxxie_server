@@ -3,22 +3,18 @@ from __future__ import print_function
 
 import os
 import sys
-import copy
 
 import cv2
 import numpy as np
 
+from model import Model
+
 here = os.path.dirname(os.path.abspath(__file__))
 
-log_name_dict = {
-    "tag": "球鞋鞋标",
-    "stitch": "中底走线",
-    "pad": "球鞋鞋垫",
-    "side_tag": "鞋盒侧标"
-}
+module_name = os.path.basename(__file__).split(".")[0]
 
 def get_crop_sizes(h, w, crop_cfg):
-    assert crop_cfg["type"] in {"ratio_list", "num"}
+    assert crop_cfg["type"] in {"ratio_list", "num"} and crop_cfg["type"] in crop_cfg, "crop configuration error"
     crop_sizes = []
     if crop_cfg["type"] == "ratio_list":
         for sz in crop_cfg["ratio_list"]:
@@ -39,8 +35,12 @@ def get_crop_sizes(h, w, crop_cfg):
     return crop_sizes
 
 
-class SingleNet(object):
+class SingleCaffeNet(Model):
+    __name__ = "single_caffe"
+
     default_cfg = {
+        "name": None,
+        "log_level": None,
         "caffe_path": None,
         "deploy": os.path.join(here, "resnet18_deploy.prototxt"),
         "model": os.path.join(here, "resnet18_finetune_xiebiao_duours_0502_iter_6000.caffemodel"),
@@ -57,14 +57,11 @@ class SingleNet(object):
         "not_valid_all_thres": 0.5,
         "not_valid_num_thres": 2 # when there are number of crops above this threshold whose `max_ind` is not consistent with it type class, mark it as invalid
     }
-    def __init__(self, cfg):
-        self.cfg = copy.deepcopy(self.default_cfg)
-        self.cfg.update(cfg)
-        print("Worker configuration:")
-        print("\n".join(["{:16}: {:10}".format(k, v) for k, v in sorted(self.cfg.iteritems(), key=lambda x: x[0])]))
-        self.init()
         
     def init(self):
+        self.name = self.cfg["name"] if self.cfg["name"] else self.__name__ # TODO: used for logging
+        if self.cfg["log_level"]:
+            os.environ["GLOG_minloglevel"] = self.cfg["log_level"]
         if self.cfg["caffe_path"]:
             sys.path.insert(0, self.cfg["caffe_path"])
         if self.cfg["gpu"]:
@@ -74,7 +71,7 @@ class SingleNet(object):
             caffe.set_mode_gpu()
             caffe.set_device(0)
         else:
-            caffe.set_model_cpu()
+            caffe.set_mode_cpu()
         self.net = caffe.Net(self.cfg["deploy"], self.cfg["model"], caffe.TEST)
         self.transformer = caffe.io.Transformer({"data": self.net.blobs["data"].data.shape})
         self.transformer.set_transpose("data", (2,0,1))
@@ -112,18 +109,7 @@ class SingleNet(object):
         img = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
         return img 
 
-    def _get_log(self, tp_lst, res, valid_res):
-        log_lst = []
-        for n, r, vr in zip(tp_lst, res, valid_res):
-            if isinstance(n, (tuple, list)):
-                n = n[0]
-            if vr:
-                log_lst.append("{:10}: {} {}".format(n, "might be valid", "true" if r else "fake"))
-            else:
-                log_lst.append("{:10}: {}".format(n, "not valid picture!"))
-        return "\n".join(log_lst)
-
-    def run(self, body):
+    def run(self, body, return_raw=False):
         imgdir = body["imgdir"]
         res = []
         valid_res = []
@@ -138,11 +124,9 @@ class SingleNet(object):
             print(tp, "true" if an else "fake", "valid" if valid else "notvalid", score)
             res.append(an)
             valid_res.append(valid)
-        ans = "true" if np.all(res) else "fake"
-        if not np.all(valid_res):
-            ans = "not_sure"
-        log = self._get_log(self.cfg["type"], res, valid_res)
-        return ans, log
+        if return_raw:
+            return self.cfg["type"], res, valid_res
+        return self._get_answer_and_log(self.cfg["type"], res, valid_res)
 
     def test_multicrop(self, imgpath, ind=0):
         thres = self.cfg["thres"]
@@ -185,4 +169,4 @@ class SingleNet(object):
         # print("result: {}\tscore: {}".format("true" if result else "fake", score))
         return result, score, valid
 
-__WORKER__ = SingleNet
+__MODEL__ = SingleCaffeNet

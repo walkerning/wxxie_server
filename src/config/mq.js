@@ -3,21 +3,21 @@ if (process.env.NODE_ENV == "development") {
     connection: {
       user: "guest",
       pass: "guest",
-      host: "localhost",
+      host: "127.0.0.1",
       port: 5672,
-      vhost: "%2f",
+      vhost: "dev",
       heartbeat: 30
     },
     exchanges: [
       {
-        name: "ex.wxxie.dev.1",
+        name: "ex.wxxie.1",
         type: "direct",
         autoDelete: false,
         durable: true
       }],
     queues: [
       {
-        name: "q.wxxie.dev.1",
+        name: "q.wxxie.1",
         durable: true,
         subscribe: false, // do not subscribe on this queue as it"s for workers to consume
         limit: 100, // max number of unacked messages allowd for consumer
@@ -26,8 +26,8 @@ if (process.env.NODE_ENV == "development") {
     ],
     bindings: [
       {
-        exchange: "ex.wxxie.dev.1",
-        target: "q.wxxie.dev.1",
+        exchange: "ex.wxxie.1",
+        target: "q.wxxie.1",
         keys: [ "" ]
       }
     ]
@@ -37,21 +37,21 @@ if (process.env.NODE_ENV == "development") {
     connection: {
       user: "guest",
       pass: "guest",
-      host: "localhost",
+      host: "127.0.0.1",
       port: 5672,
-      vhost: "%2f",
+      vhost: "test",
       heartbeat: 30
     },
     exchanges: [
       {
-        name: "ex.wxxie.debug.1",
+        name: "ex.wxxie.1",
         type: "direct",
         autoDelete: false,
         durable: true
       }],
     queues: [
       {
-        name: "q.wxxie.debug.1",
+        name: "q.wxxie.1",
         durable: true,
         subscribe: false, // do not subscribe on this queue as it"s for workers to consume
         limit: 100, // max number of unacked messages allowd for consumer
@@ -60,8 +60,8 @@ if (process.env.NODE_ENV == "development") {
     ],
     bindings: [
       {
-        exchange: "ex.wxxie.debug.1",
-        target: "q.wxxie.debug.1",
+        exchange: "ex.wxxie.1",
+        target: "q.wxxie.1",
         keys: [ "" ]
       }
     ]
@@ -71,20 +71,21 @@ if (process.env.NODE_ENV == "development") {
     connection: {
       user: process.env.WXXIE_MQ_USER,
       pass: process.env.WXXIE_MQ_PASSWORD,
-      host: "localhost",
+      host: "127.0.0.1",
       port: 5672,
-      vhost: "%2f", // ?
+      vhost: "deploy",
       heartbeat: 30
     },
     exchanges: [
       {
-        name: "ex.wxxie.deploy.1",
+        name: "ex.wxxie.1",
         type: "direct",
-        autoDelete: false
+        autoDelete: false,
+        durable: true
       }],
     queues: [
       {
-        name: "q.wxxie.deploy.1",
+        name: "q.wxxie.1",
         durable: true,
         subscribe: false, // do not subscribe on this queue as it"s for workers to consume
         limit: 100, // max number of unacked messages allowd for consumer
@@ -93,8 +94,8 @@ if (process.env.NODE_ENV == "development") {
     ],
     bindings: [
       {
-        exchange: "ex.wxxie.deploy.1",
-        target: "q.wxxie.deploy.1",
+        exchange: "ex.wxxie.1",
+        target: "q.wxxie.1",
         keys: [ "" ]
       }
     ]

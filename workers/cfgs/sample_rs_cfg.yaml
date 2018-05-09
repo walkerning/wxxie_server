@@ -3,7 +3,7 @@ pass: guest
 host: localhost
 port: 5672
 
-queue_name: q.wxxie.debug.answer.1
+queue_name: q.wxxie.answer.1
 queue_cfg:
   durable: true
   maxLength: 1000

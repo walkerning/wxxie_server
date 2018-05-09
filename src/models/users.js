@@ -7,7 +7,7 @@ var User = bookshelfInst.Model.extend({
   tableName: "users",
 
   defaults: {
-    quota: 5
+    quota: 50
   },
 
   tasks: function() {

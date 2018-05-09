@@ -4,7 +4,7 @@ var config = require("../config").mq;
 
 rabbot.log([
   { level: "warn", stream: process.stdout},
-  { level: "debug", stream: fs.createWriteStream("/var/run/wxxie_server_mq.log"), objectMode: true }
+  { level: "debug", stream: fs.createWriteStream("./wxxie_server_mq.log"), objectMode: true }
 ]);
 
 module.exports = rabbot.configure(config)

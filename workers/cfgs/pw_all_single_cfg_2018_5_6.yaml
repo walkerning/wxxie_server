@@ -1,0 +1,40 @@
+name: sample_single_all_worker
+
+exchange:
+  exchange: ex.wxxie.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+queue:
+  queue: q.wxxie.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+
+queue_limit: 100
+
+answer_exchange:
+  exchange: ex.wxxie.answer.1
+  type: direct
+  auto_delete: false
+  durable: true
+
+answer_queue:
+  queue: q.wxxie.answer.1
+  durable: true
+  arguments:
+    x-max-length: 1000
+
+worker: 
+  module: single_caffe
+  cfg:
+    type: [[appear, 2], [tag, 1], [stitch, 5], [pad, 3], [tongue, 0]]
+    num_light: 0
+    crop_cfg:
+      type: "num"
+      num: 10
+    deploy: /xiedata/models/alexnet_deploy.prototxt
+    model: /xiedata/models/alexnet_finetune_zhenghe_xxcxxz_0421_iter_8000.caffemodel
+    caffe_path: /xiedata/caffe/python
+  cfg_file:
