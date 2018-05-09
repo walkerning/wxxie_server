@@ -124,8 +124,8 @@ function uploadTaskFile(req, res, next) {
               shell.mkdir("-p", fs_path);
             }
             // TODO: use a handler to do this check.
-            if (!_.includes(["appear", "tag", "stitch", "pad", "side_tag", "seal"], type_name)) {
-              return Promise.reject(new errors.ValidationError({ message: "'type' field should be in ['appear', 'tag', 'stitch', 'pad', 'side_tag', 'seal'] "}));
+            if (!_.includes(["appear", "tag", "stitch", "pad", "side_tag", "seal", "tongue"], type_name)) {
+              return Promise.reject(new errors.ValidationError({ message: "'type' field should be in ['appear', 'tag', 'stitch', 'pad', 'side_tag', 'seal', 'tongue'] "}));
             }
             // TODO: filesystem error?
             return fs.renameAsync(files["path"], path.join(fs_path, type_name + ".png"))
@@ -150,8 +150,9 @@ function downloadTaskFile(req, res, next) {
       var [user, task] = r;
       var fs_basename = process.env.FS_PIC_BASENAME;
       var type_name = req.params.fileType;
-      if (!_.includes(["appear", "tag", "stitch", "pad", "side_tag", "seal"], type_name)) {
-        return Promise.reject(new errors.ValidationError({ message: "'type' field should be in ['appear', 'tag', 'stitch', 'pad', 'side_tag', 'seal'] "}));
+      // **TODO**: this meta information should be loaded from a config file
+      if (!_.includes(["appear", "tag", "stitch", "pad", "side_tag", "seal", "tongue"], type_name)) {
+        return Promise.reject(new errors.ValidationError({ message: "'type' field should be in ['appear', 'tag', 'stitch', 'pad', 'side_tag', 'seal', 'tongue'] "}));
       }
       var fname = sanitize(type_name + ".png");
       var fs_path = path.join(fs_basename, _.toString(task.get("user_id")), _.toString(task.get("id")), fname);

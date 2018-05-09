@@ -54,6 +54,7 @@ class SingleNet(object):
         }, # type can be one of `num`, `ratio_list`
         "thres": 0.5,
         "not_valid_thres": 0.5,
+        "not_valid_all_thres": 0.5,
         "not_valid_num_thres": 2 # when there are number of crops above this threshold whose `max_ind` is not consistent with it type class, mark it as invalid
     }
     def __init__(self, cfg):
@@ -146,7 +147,7 @@ class SingleNet(object):
     def test_multicrop(self, imgpath, ind=0):
         thres = self.cfg["thres"]
         img = cv2.imread(imgpath)
-        assert img is not None, imgpath
+        assert img is not None, os.path.basename(imgpath) + " not exists"
 
         imgs = list()
         h1, w1, _ = img.shape
@@ -171,12 +172,17 @@ class SingleNet(object):
                 not_valid += 1
         score_fake /= len(imgs)
         score_true /= len(imgs)
+        if max(score_fake, score_true) < self.cfg["not_valid_all_thres"]:
+            valid = 0
+        else:
+            valid = int(not_valid < self.cfg["not_valid_num_thres"])
+        print("unnorm: ", score_fake, score_true)
         _norm = score_fake + score_true
         score = score_true / _norm
         result = 0 # fake
         if score > thres:
             result = 1 # true
         # print("result: {}\tscore: {}".format("true" if result else "fake", score))
-        return result, score, not_valid < self.cfg["not_valid_num_thres"]
+        return result, score, valid
 
 __WORKER__ = SingleNet

@@ -97,19 +97,25 @@ while 1:
     print("receiver {} [x] receive:".format(worker_name), receive_message)
     print("\tbody: ", body)
     start_time = round(time.time() * 1000)
-    answer, log = worker.run(body)
+    res = {
+        "user_id": body["user_id"],
+        "task_id": body["task_id"],
+        "start_time": start_time,
+    }
+    try:
+        answer, log = worker.run(body)
+    except Exception as e:
+        res["state"] = "failed"
+        res["log"] = e.message
+    else:
+        res["state"] = "finished"
+        res["answer"] = answer
+        res["log"] = log
     finish_time = round(time.time() * 1000)
+    res["finish_time"] = finish_time
     client.wait(client.basic_publish(exchange=ans_ex_name,
                                      routing_key=ans_rkey,
-                                     body=json.dumps({
-                                         "user_id": body["user_id"],
-                                         "task_id": body["task_id"],
-                                         "answer": answer,
-                                         "state": "finished", # TODO: handle failure
-                                         "start_time": start_time,
-                                         "finish_time": finish_time,
-                                         "log": log
-                                     })))
+                                     body=json.dumps(res)))
     client.basic_ack(receive_message)
 
 client.wait(client.close())
