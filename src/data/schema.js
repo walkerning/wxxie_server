@@ -1,5 +1,5 @@
 module.exports = {
-  tableNames: ["permissions", "users", "tasks", "permissions_users"],
+  tableNames: ["permissions", "users", "tasks", "brands", "shoe_models", "positions", "permissions_users"],
 
   users: {
     id: {
@@ -59,6 +59,13 @@ module.exports = {
       }
     },
 
+    // password for dev/test login only // **TODO**: do not return. hash on save. password check func. password checker login middleware.
+    password: {
+      type: "string",
+      maxlength: 191,
+      nullable: true
+    },
+
     created_at: {
       type: "dateTime",
       nullable: false
@@ -69,40 +76,194 @@ module.exports = {
     }
   },
 
+  brands: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+    image: {
+      type: "string",
+      nullable: false
+    },
+    name: {
+      type: "string",
+      nullable: false
+    },
+    show_name: {
+      type: "string",
+      nullable: false
+    },
+    description: {
+      type: "text",
+      nullable: false
+    },
+    state: {
+      type: "string",
+      nullable: false,
+      defaultTo: "no",
+      validations: {
+        isIn: [["no", "testing", "supported"]]
+      }
+    },
+
+    created_at: {
+      type: "dateTime",
+      nullable: false
+    },
+    updated_at: {
+      type: "dateTime",
+      nullable: false
+    }
+  },
+
+  shoe_models: {
+    image: {
+      type: "string",
+      nullable: false
+    },
+    name: {
+      type: "string",
+      nullable: false
+    },
+    show_name: {
+      type: "string",
+      nullable: false
+    },
+    description: {
+      type: "text",
+      nullable: false
+    },
+    state: {
+      type: "string",
+      nullable: false,
+      defaultTo: "no",
+      validations: {
+        isIn: [["no", "testing", "supported"]]
+      }
+    },
+    positions: {
+      type: "text",
+      nullable: false,
+      validations: {
+        isJSON: true
+      }
+    },
+    brand_id: {
+      type: "integer",
+      nullable: false,
+      unsigned: true,
+      index: true,
+      references: "brands.id",
+      onDelete: "CASCADE"
+    },
+
+    created_at: {
+      type: "dateTime",
+      nullable: false
+    },
+    updated_at: {
+      type: "dateTime",
+      nullable: false
+    }
+  },
+
+  positions: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+    name: {
+      type: "string",
+      nullable: false
+    },
+    show_name: {
+      type: "string",
+      nullable: false
+    },
+    image: {
+      type: "string",
+      nullable: false
+    },
+    example_image: {
+      type: "string",
+      nullable: true
+    },
+
+    created_at: {
+      type: "dateTime",
+      nullable: false
+    },
+    updated_at: {
+      type: "dateTime",
+      nullable: false
+    }
+  },
+
   tasks: {
     id: {
       type: "increments",
       nullable: false,
       primary: true
     },
-    task_name: {
-      type: "string",
-      nullable: false
-    },
     user_id: {
       type: "integer",
       nullable: false,
       unsigned: true,
+      index: true,
       references: "users.id",
       onDelete: "CASCADE"
     },
+    shoe_model_id: {
+      type: "integer",
+      nullable: false,
+      unsigned: true,
+      index: true,
+      references: "shoe_models.id",
+      onDelete: "CASCADE"
+    },
+
+
     meta_tag: {
       type: "string",
       nullable: false,
+      maxlength: 20,
       defaultTo: "v0.1"
     },
-    shoe_model: {
+    task_name: {
       type: "string",
+      maxlength: 40,
+      nullable: false
+    },
+    type: {
+      type: "string",
+      nullable: false,
+      validations: {
+        isIn: [["new", "old"]]
+      }
+    },
+    buy_type: {
+      type: "string",
+      nullable: false,
+      validations: {
+        isIn: [["Physical", "Tmall", "JD", "Taobao", "Other"]]
+      }
+    },
+    buy_other_type: {
+      type: "string",
+      maxlength: 20,
+      nullable: true
+    },
+    buy_name: {
+      type: "text",
+      maxlength: 36,
       nullable: true
     },
     comment: {
       type: "text",
       nullable: true,
       maxlength: 100
-    },
-    form_id: {
-      type: "string",
-      nullable: true
     },
 
     state: {
@@ -116,7 +277,7 @@ module.exports = {
     log: {
       type: "text",
       nullable: true,
-      maxlength: 1000
+      maxlength: 600
     },
     answer: {
       type: "string",
