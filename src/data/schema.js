@@ -1,5 +1,5 @@
 module.exports = {
-  tableNames: ["permissions", "users", "tasks", "brands", "shoe_models", "positions", "permissions_users"],
+  tableNames: ["permissions", "users", "brands", "shoe_models", "positions", "tasks", "permissions_users", "positions_shoe_models"],
 
   users: {
     id: {
@@ -7,9 +7,22 @@ module.exports = {
       nullable: false,
       primary: true
     },
-    openId: {
+    // userName/password for dev/test login only // **TODO**: do not return. hash on save. password check func. password checker login middleware.
+    // for wechat user, default to openId
+    userName: {
       type: "string",
       nullable: false,
+      unique: true
+    },
+    password: {
+      type: "string",
+      maxlength: 191,
+      nullable: true
+    },
+
+    openId: {
+      type: "string",
+      nullable: true,
       unique: true
     },
     nickName: {
@@ -19,7 +32,10 @@ module.exports = {
     },
     gender: {
       type: "integer",
-      nullable: false
+      nullable: false,
+      validations: {
+        isIn: [[0,1,2,3]]
+      }
     },
     city: {
       type: "string",
@@ -57,13 +73,6 @@ module.exports = {
       validations: {
         isMinimum: 0
       }
-    },
-
-    // password for dev/test login only // **TODO**: do not return. hash on save. password check func. password checker login middleware.
-    password: {
-      type: "string",
-      maxlength: 191,
-      nullable: true
     },
 
     created_at: {
@@ -107,6 +116,11 @@ module.exports = {
       }
     },
 
+    supported_at: {
+      type: "dateTime",
+      nullable: true
+    },
+
     created_at: {
       type: "dateTime",
       nullable: false
@@ -142,13 +156,13 @@ module.exports = {
         isIn: [["no", "testing", "supported"]]
       }
     },
-    positions: {
-      type: "text",
-      nullable: false,
-      validations: {
-        isJSON: true
-      }
-    },
+    // positions: {
+    //   type: "text",
+    //   nullable: false,
+    //   validations: {
+    //     isJSON: true
+    //   }
+    // },
     brand_id: {
       type: "integer",
       nullable: false,
@@ -211,7 +225,10 @@ module.exports = {
       type: "integer",
       nullable: false,
       unsigned: true,
-      index: true,
+      composite_index: {
+        name: 0,
+        order: 0
+      },
       references: "users.id",
       onDelete: "CASCADE"
     },
@@ -220,10 +237,13 @@ module.exports = {
       nullable: false,
       unsigned: true,
       index: true,
+      composite_index: {
+        name: 0,
+        order: 1
+      },
       references: "shoe_models.id",
       onDelete: "CASCADE"
     },
-
 
     meta_tag: {
       type: "string",
@@ -264,6 +284,10 @@ module.exports = {
       type: "text",
       nullable: true,
       maxlength: 100
+    },
+    form_id: {
+      type: "string",
+      nullable: true
     },
 
     state: {
@@ -346,11 +370,41 @@ module.exports = {
     },
     user_id: {
       type: "integer",
-      nullable: false
+      nullable: false,
+      unsigned: true,
+      index: true,
+      references: "users.id",
+      onDelete: "CASCADE"
     },
     permission_id: {
       type: "integer",
-      nullable: false
+      nullable: false,
+      unsigned: true,
+      references: "permissions.id",
+      onDelete: "CASCADE"
+    }
+  },
+
+  positions_shoe_models: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+    position_id: {
+      type: "integer",
+      nullable: false,
+      unsigned: true,
+      references: "positions.id",
+      onDelete: "CASCADE"
+    },
+    shoe_model_id: {
+      type: "integer",
+      nullable: false,
+      unsigned: true,
+      index: true,
+      references: "shoe_models.id",
+      onDelete: "CASCADE"
     }
   }
 };

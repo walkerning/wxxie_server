@@ -8,9 +8,10 @@ var models = require("../../models");
 var initData = {
   User: [
     {
-      name: "root",
-      nickName: "球球君A",
-      gender: 1,
+      userName: "root"
+      nickName: "rootNickName",
+      password: "ASTARTPASSWORD",
+      gender: 3,
       openId: "____afakeopenid____",
       email: "root@localhost.com",
       phone: "18888888888"
@@ -18,20 +19,28 @@ var initData = {
   ],
   Permission: [
     {
-      name: "run",
-      description: "Create and run tasks."
+      name: "login_userpass",
+      description: "是否可用用户名密码登录"
+    },
+    {
+      name: "auth_jwt",
+      description: "是否可用JWT token认证"
     },
     {
       name: "user",
-      description: "User management permission."
+      description: "用户管理权限"
+    },
+    {
+      name: "brand",
+      description: "品牌/鞋型管理权限"
     },
     {
       name: "task",
-      description: "Task management permission."
+      description: "任务管理权限"
     },
     {
       name: "permission",
-      description: "Permission management permission."
+      description: "权限管理权限"
     },
   ],
 };
