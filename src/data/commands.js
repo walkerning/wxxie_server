@@ -103,6 +103,6 @@ function createTable(tableName) {
 }
 
 module.exports = {
-  createTable: createTable,
-  dropTable: dropTable
+  createTable,
+  dropTable
 };

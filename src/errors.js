@@ -74,12 +74,12 @@ class NotFoundError extends Error {
 ;
 
 var errors = {
-  BadRequestError: BadRequestError,
-  ValidationError: ValidationError,
-  UnauthorizedError: UnauthorizedError,
-  InternalServerError: InternalServerError,
-  NotFoundError: NotFoundError,
-  ForbiddenError: ForbiddenError
+  BadRequestError,
+  ValidationError,
+  UnauthorizedError,
+  InternalServerError,
+  NotFoundError,
+  ForbiddenError
 };
 
 module.exports = errors;

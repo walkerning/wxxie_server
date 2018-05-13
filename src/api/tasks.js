@@ -14,7 +14,7 @@ var errors = require("../errors");
 var rabbot_prom = require("../mq/rabbot");
 var mq_cfg = require("../config").mq;
 
-function createTask(req, res, next) {
+function addTask(req, res, next) {
   return models.User.getById(req.params.userId, {
     fetchOptions: {
       withRelated: ["tasks"]
@@ -22,7 +22,7 @@ function createTask(req, res, next) {
   })
     .then(function(user) {
       var quota = user.get("quota");
-      var now_num = user.related("tasks").toJSON().length;
+      var now_num = user.related("tasks").toClientJSON().length;
       if (now_num >= quota) {
         return Promise.reject(new errors.ValidationError({ message: `Quota exceed, you can only create ${quota} (now ${now_num})` }))
       }
@@ -36,7 +36,7 @@ function createTask(req, res, next) {
       });
     })
     .then(function(task) {
-      res.status(201).json(task.toJSON());
+      res.status(201).json(task.toClientJSON());
     });
 }
 
@@ -52,10 +52,16 @@ function updateTask(req, res, next) {
         .then(() => {
           return task.fetch()
             .then(() => {
-              res.status(200).json(task.toJSON());
+              res.status(200).json(task.toClientJSON());
             });
         });
     })
+}
+
+function updateTaskAdmin(req, res, next) {
+}
+
+function deleteTask(req, res, next) {
 }
 
 function runTask(req, res, next) {
@@ -93,7 +99,7 @@ function runTask(req, res, next) {
             return task.update({"state": "waiting", "run_time": now}, req.user, true)
               .then((task) => {
                 // **TODO**: PUT the task meta information
-                res.status(200).json(task.toJSON());
+                res.status(200).json(task.toClientJSON());
               });
           });
         });
@@ -175,10 +181,16 @@ function downloadTaskFile(req, res, next) {
     });
 }
 
+function listAllTasks(req, res, next) {
+}
+
 module.exports = {
-  createTask: createTask,
-  updateTask: updateTask,
-  runTask: runTask,
-  uploadTaskFile: uploadTaskFile,
-  downloadTaskFile: downloadTaskFile
+  addTask,
+  updateTask,
+  updateTaskAdmin,
+  runTask,
+  deleteTask,
+  uploadTaskFile,
+  downloadTaskFile,
+  listAllTasks
 };

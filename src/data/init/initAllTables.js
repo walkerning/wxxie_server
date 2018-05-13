@@ -8,7 +8,7 @@ var models = require("../../models");
 var initData = {
   User: [
     {
-      userName: "root"
+      userName: "root",
       nickName: "rootNickName",
       password: "ASTARTPASSWORD",
       gender: 3,

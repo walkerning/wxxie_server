@@ -30,6 +30,6 @@ passwordGenerator = {
 };
 
 module.exports = {
-  passwordValidator: passwordValidator,
-  passwordGenerator: passwordGenerator
+  passwordValidator,
+  passwordGenerator
 };

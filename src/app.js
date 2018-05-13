@@ -8,8 +8,8 @@ const helmet = require("helmet");
 const logging = require("./logging");
 const models = require("./models");
 const apiRouter = require("./api");
-const wafer = require("./middlewares/wafer")
-const readUserMiddleware = require("./middlewares/readUser");
+const loginHandler = require("./login").login;
+const authMiddleware = require("./auth").auth;
 
 models.init();
 
@@ -33,11 +33,12 @@ app.use(compression());
 // PLUGIN: JSON body parser: parse JSON payload into `req.body` attribute
 app.use(bodyParser.json());
 
-// PLUGIN: wafer for authenticate user with wechat server
-app.use(wafer);
+// PLUGIN: authenticate and set user: authenticate according to WX_XIE_HEADER_AUTH header, and set `req.user` attribute to the context user
+app.use(authMiddleware.unless(["/login"]));
 
-// PLUGIN: set user: fetch the database, set `req.user` attribute to the context user
-app.use("/api/v1", readUserMiddleware);
+
+// login point
+app.post("/login", loginHandler);
 
 // ROUTES: api routes
 app.use("/api/v1", apiRouter);

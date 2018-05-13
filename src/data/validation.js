@@ -145,6 +145,6 @@ function validate(value, key, tableName) {
 ;
 
 module.exports = {
-  validateSchema: validateSchema,
-  validate: validate
+  validateSchema,
+  validate
 };

@@ -342,8 +342,8 @@ API
   * API的wafer中间件用 `session_key` 生成 `skey` 和 `sid`,使用 `sid` 作为键值 `session_key` 和 `user_info` 等作为value 存在 session store 里 (expire默认1天); 把并把`skey`和`sid`两个信息传回给小程序前端
   * 小程序前端会在接下来的请求的HEADER里带上`skey`和`sid`, 在该session过期之前, APIwafer都不需要重新给微信服务器发起登陆请求.
 
-* 用户名密码(with JWT token for now): 现在主要用于服务器端测试使用
-  * 客户端使用login point `POST /auth` 提供用户名 `userName` 和 `password`.
+* 用户名密码登录(with JWT token for now): 现在主要用于服务器端测试使用
+  * 客户端使用login point `POST /login` 提供用户名 `userName` 和 `password`.
   * API验证:
     * `userName`, `password`均不为空
     * 存在该`userName`的用户

@@ -3,7 +3,9 @@ module.exports = {
   database: require("./database"),
   validation: require("./validation"),
   log: require("./log"),
-  mq: require("./mq")
+  mq: require("./mq"),
+  api: require("./api"),
+  jwt: require("./jwt")
 };
 
 

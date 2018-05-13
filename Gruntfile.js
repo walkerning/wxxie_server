@@ -44,11 +44,7 @@ module.exports = function(grunt) {
       express_dev: {
         files: [
           "src/*.js",
-          "src/api/*.js",
-          "src/models/*.js",
-          "src/middlewares/*.js",
-          "src/configs/*.js",
-          "src/data/*.js"
+          "src/**/*.js"
         ],
         tasks: ["express:dev"],
         options: {
@@ -58,11 +54,7 @@ module.exports = function(grunt) {
       express_test: {
         files: [
           "src/*.js",
-          "src/api/*.js",
-          "src/models/*.js",
-          "src/middlewares/*.js",
-          "src/configs/*.js",
-          "src/data/*.js"
+          "src/**/*.js"
         ],
         tasks: ["express:test"],
         options: {
@@ -72,10 +64,7 @@ module.exports = function(grunt) {
       express_prod: {
         files: [
           "src/*.js",
-          "src/api/*.js",
-          "src/models/*.js",
-          "src/configs/*.js",
-          "src/middlewares/*.js"
+          "src/**/*.js"
         ],
         tasks: ["express:prod"],
         options: {
@@ -98,5 +87,6 @@ module.exports = function(grunt) {
   grunt.registerTask("initdb", ["execute:initDb"]);
   grunt.registerTask("dev", ["express:dev", "watch:express_dev"]);
   grunt.registerTask("test", ["express:test", "watch:express_test"]);
-  grunt.registerTask("prod", ["express:prod", "watch:express_prod"]);
+  grunt.registerTask("prod", ["express:prod"]);
+  grunt.registerTask("prod_watch", ["express:prod", "watch:express_prod"]);
 };

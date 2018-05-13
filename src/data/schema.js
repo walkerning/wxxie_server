@@ -127,11 +127,17 @@ module.exports = {
     },
     updated_at: {
       type: "dateTime",
-      nullable: false
+      nullable: true
     }
   },
 
   shoe_models: {
+    id: {
+      type: "increments",
+      nullable: false,
+      primary: true
+    },
+
     image: {
       type: "string",
       nullable: false
@@ -178,7 +184,7 @@ module.exports = {
     },
     updated_at: {
       type: "dateTime",
-      nullable: false
+      nullable: true
     }
   },
 
@@ -211,7 +217,7 @@ module.exports = {
     },
     updated_at: {
       type: "dateTime",
-      nullable: false
+      nullable: true
     }
   },
 

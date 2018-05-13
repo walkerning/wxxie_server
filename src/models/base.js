@@ -114,8 +114,18 @@ bookshelfInst.Model = bookshelfInst.Model.extend({
       return Promise.resolve(null);
     }
     return this.save(newBody, {});
+  },
+
+  toClientJSON: function toClientJSON(options) {
+    options = options || {};
+    options["omitPivot"] = true;
+    var json = _.omitBy(_.omit(this.toJSON(options), this.constructor.secretAttributes()), _.isNull);
+    return json;
   }
 }, {
+  secretAttributes: function secretAttributes() {
+    return [];
+  },
   /**
    * @returns {Promise<Model>}
    */

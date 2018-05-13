@@ -16,7 +16,7 @@ function dropTables(names) {
 function createTables(names) {
   return Promise.mapSeries(names, function createTable(tableName) {
     logging.info("Creating table: " + tableName);
-    return commands.createTable(tableName);
+    return commands.createTable(tableName).then(() => { logging.info("Created table: " + tableName); });
   });
 }
 
