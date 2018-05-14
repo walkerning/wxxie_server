@@ -10,7 +10,7 @@ function createToken(user) {
   return jwt.sign({
     id: user.id,
   }, config.secret, {
-    expiresIn: 60 * 60 * 24,
+    expiresIn: config.expiresIn,
     issuer: config.issuer
   });
 }

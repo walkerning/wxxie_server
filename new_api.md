@@ -381,4 +381,7 @@ API
 
 数据库
 ============
-mysql
+MySQL
+
+**还未完全确定**: schema设计见[`src/data/schema.js`](src/data/schema.js)
+

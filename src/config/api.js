@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const path = require("path");
 const src_base_dir = path.dirname(__dirname);
 
@@ -7,7 +8,7 @@ const _abs_path = function(_path) {
 
 var authCfg = null;
 
-if (process.env.WXXIE_NOWECHAT) {
+if (process.env.WXXIE_NOWECHAT && _.toInteger(process.env.WXXIE_NOWECHAT)) {
   authCfg = {
     jwt: {
       module: _abs_path("auth/jwt"),

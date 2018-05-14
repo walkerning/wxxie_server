@@ -1,14 +1,23 @@
 development指导
 ------------
 
-### 运行起来API dev server
+### 环境变量
 
-* 安装mysql, node, npm等
+现在的代码里, 在不同的mode下运行, 会读一些环境变量; 环境变量列表和解释见 [`sample_env.sh`](./sample_env.sh)
+
+### 运行API dev server
+
+**依赖**
+
+* 安装mysql, node, npm等;
 * ``mysql -u root -p < scripts/create_database.sql``: 把用于development和test的数据库以及账户创建; 数据库链接的配置在``src/config/database.js``;
 * ``npm install -g grunt-cli``
-* ``npm install`` 安装项目依赖
-* ``NODE_ENV=development grunt database``: 初始化数据库: 建立表格, 插入实验数据
-* ``grunt dev``: 运行development server
+* ``npm install`` 安装项目依赖;
+
+**运行**
+
+* ``NODE_ENV=development grunt database``: 初始化数据库: 建立表格, 插入实验数据;
+* ``WXXIE_NOWECHAT=1 grunt dev``: 运行development server; ``WXXIE_NOWECHAT``解释见 [`sample_env.sh`](./sample_env.sh)
 
 ### 测试server API的方法
 
