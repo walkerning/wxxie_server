@@ -1,18 +1,6 @@
 #!/usr/bin/env node
 
-var node_env = process.env.NODE_ENV;
-var vhost = null;
-if (node_env === "development") {
-    vhost = "dev";
-} else if (node_env === "test") {
-    vhost = "test";
-} else if (node_env === "deploy") {
-    vhost = "deploy";
-} else {
-    console.log("NODE_ENV must be in development/test/deploy: ", node_env)
-    process.exit(1);
-}
-
+var _ = require("lodash");
 var fs = require("fs");
 var Promise = require("bluebird");
 var request = require("request");
@@ -20,14 +8,23 @@ var util = require("util");
 var yaml = require("js-yaml");
 const pify = require('pify');
 var amqp = require("amqplib/callback_api");
-var models = require("../src/models");
+var models = require("../models");
 
 models.init();
 
 var cfg = yaml.safeLoad(fs.readFileSync(process.argv[2]));
-// **TODO**: move this to a config file too
-uri = util.format("amqp://%s:%s@%s:%d/%s", cfg["user"], cfg["pass"],
-		  cfg["host"], cfg["port"], vhost);
+
+// default uri spec
+var uri_spec = {
+  "user": process.env.RABBITMQ_DEFAULT_USER || "guest",
+  "pass": process.env.RABBITMQ_DEFAULT_PASS || "guest",
+  "host": process.env.RABBITMQ_HOST || "127.0.0.1",
+  "port": 5672,
+  "vhost": process.env.RABBITMQ_DEFAULT_VHOST || "dev"
+};
+uri_spec = _.assign(uri_spec, cfg["uri_spec"] || {});
+const uri = util.format("amqp://%s:%s@%s:%d/%s", uri_spec["user"], uri_spec["pass"],
+		  uri_spec["host"], uri_spec["port"], uri_spec["vhost"]);
 
 const TM_BASE_URL = "https://api.weixin.qq.com/cgi-bin";
 var TEMPLATE_ID = cfg["template_id"]?cfg["template_id"]:"oGaG-M_aZnJoXK-HH0DZYV1a2GQFM_vIixSq3kDtpnE";
@@ -113,13 +110,18 @@ function msToTime(duration) {
     return hours + "时" + minutes + "分" + seconds + "." + milliseconds + "秒";
 }
 
+console.log("amqp URI: ", uri)
+
 amqp.connect(uri, function(err, conn) {
+  if (err) {
+    throw new Error(err);
+  }
     conn.createChannel(function(err, ch) {
 	var q = cfg["queue_name"];
 	
 	ch.assertQueue(q, cfg["queue_cfg"]);
 	ch.prefetch(cfg["queue_limit"]);
-	console.log(" [*] Waiting for messages in %s/%s. To exit press CTRL+C", vhost, q);
+	console.log(" [*] Waiting for messages in %s/%s. To exit press CTRL+C", uri_spec["vhost"], q);
 	ch.consume(q, function(msg) {
 	    var res = JSON.parse(msg.content.toString());
 	    console.log(" [x] Received", res);

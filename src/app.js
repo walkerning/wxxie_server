@@ -45,7 +45,7 @@ app.use("/api/v1", apiRouter);
 
 // The unify error handler. 
 // @TODO: improve the error system
-if (app.get("env") == "development" || app.get("env") == "test") {
+if (app.get("env") == "dev" || app.get("env") == "test") {
   app.use("/", function(err, req, res, next) {
     // FIXME: although now we keep the consistence of
     // our error objects towards the error object of jwt-express.

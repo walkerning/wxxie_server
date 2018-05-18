@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       dev: {
         options: {
           script: "src/devServer.js",
-          node_env: "development"
+          node_env: "dev"
         }
       },
       test: {
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
       prod: {
         options: {
           script: "src/devServer.js",
-          node_env: "production",
+          node_env: "deploy",
           background: true,
           serverreload: true
         }
@@ -44,7 +44,8 @@ module.exports = function(grunt) {
       express_dev: {
         files: [
           "src/*.js",
-          "src/**/*.js"
+          "src/**/*.js",
+          "src/services/*"
         ],
         tasks: ["express:dev"],
         options: {

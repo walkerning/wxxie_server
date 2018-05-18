@@ -1,0 +1,22 @@
+FROM wxxie/node_mysql:ubuntu
+
+ENV HOME /app/src/services
+
+RUN mkdir -p /app/src
+# TODO: this is very ugly... we need to decouple these modules
+COPY package.json /app
+COPY src/data  /app/src/data
+COPY src/models  /app/src/models
+COPY src/config  /app/src/config
+COPY src/services  /app/src/services
+COPY src/errors.js  /app/src/errors.js
+COPY src/logging.js  /app/src/logging.js
+COPY workers/rabbitcookie_entry.sh /app/src/services/rabbitcookie_entry.sh
+
+WORKDIR /app
+RUN npm install
+
+WORKDIR /app/src/services
+
+ENTRYPOINT ["./rabbitcookie_entry.sh"]
+CMD ["node", "result_service.js", "cfgs/rs_stub.yaml"]

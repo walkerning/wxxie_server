@@ -1,0 +1,16 @@
+FROM ubuntu:14.04
+
+# install apt-transport-https first for installing from https://<tuna mirro> latter
+RUN apt-get update && apt-get install -y apt-transport-https
+
+RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ trusty-backports main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ trusty-security main restricted universe multiverse" >> /etc/apt/sources.list
+
+RUN apt-get update && apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get install -y nodejs mysql-client && \
+    rm -rf /var/cache/apt/* && \
+    rm -rf /var/lib/apt/lists/*
+
+CMD ["/bin/bash"]

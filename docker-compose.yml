@@ -1,0 +1,74 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    volumes:
+      - "mysql-data:/var/lib/mysql"
+    env_file:
+      - envs/${WXXIE_MODE}.env.local
+    labels:
+      NAME: "wxxie_mysql_${WXXIE_MODE}"
+    expose:
+      - "3306"
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    env_file:
+      - envs/${WXXIE_MODE}.env.local
+    volumes:
+      - "rabbitmq-data:/var/lib/rabbitmq"
+      # - "./enabled_plugins:/etc/rabbitmq/enabled_plugins"
+    hostname: "wxxie_rabbitmq"
+    labels:
+      NAME: "wxxie_rabbitmq_${WXXIE_MODE}"
+    expose:
+      - "15672"
+      - "5672"
+
+  worker_stub:
+    tty: true
+    build:
+      context: ./workers
+      dockerfile: Dockerfile-worker_stub
+    env_file:
+      - envs/${WXXIE_MODE}.env.local
+    labels:
+      NAME: "wxxie_workerstub_${WXXIE_MODE}"
+    links:
+      - rabbitmq
+
+  rs_stub:
+    tty: true
+    build:
+      context: .
+      dockerfile: Dockerfile-rs_stub
+    environment:
+      - WXXIE_DATABASE_HOST=db
+    env_file:
+      - envs/${WXXIE_MODE}.env.local
+    labels:
+      NAME: "wxxie_rsstub_${WXXIE_MODE}"
+    links:
+      - rabbitmq
+      - db
+
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - envs/${WXXIE_MODE}.env.local
+    volumes:
+      - ".:/app"
+    command: ["grunt", "${WXXIE_MODE}"]
+    labels:
+      NAME: "wxxie_webapp_${WXXIE_MODE}"
+    links:
+      - rabbitmq
+      - db
+
+volumes:
+  mysql-data: {}
+  rabbitmq-data: {}

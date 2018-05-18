@@ -25,7 +25,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("cfg", help="worker config file")
     parser.add_argument("--debug", default=True, help="debug mode")
-    parser.add_argument("--mode", default="dev", choices=["dev", "test", "deploy"], help="run mode")
+    # parser.add_argument("--mode", default="dev", choices=["dev", "test", "deploy"], help="run mode")
     args = parser.parse_args()
     
     with open(args.cfg, "r") as f:
@@ -38,23 +38,23 @@ def main():
         # sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         model = model_utils.get_model(model_cfg)
     else:
-        model = object()
-        def _stub_run(self, body):
-            time.sleep(5) # fake to be working for 5 seconds
-            return "true"
-        object.run = _stub_run
-    
-    if args.debug:
-        uri_spec = {
-            "user": "guest",
-            "pass": "guest",
-            "host": "127.0.0.1",
-            "port": 5672,
-            "vhost": args.mode
-            # "vhost": "%2f"
-        }
-    else:
-        pass # TODO
+        class StubModel(object):
+            def run(self, body):
+                time.sleep(5) # fake to be working for 5 seconds
+                return "true", "no stub log"
+        model = StubModel()
+
+  # vhost: dev
+    # default uri spec
+    uri_spec = {
+        "user": os.environ.get("RABBITMQ_DEFAULT_USER", "guest"),
+        "pass": os.environ.get("RABBITMQ_DEFAULT_PASS", "guest"),
+        "host": os.environ.get("RABBITMQ_HOST", "127.0.0.1"),
+        "port": 5672,
+        "vhost": os.environ.get("RABBITMQ_DEFAULT_VHOST", "dev")
+    }
+    uri_spec.update(cfg.get("uri_spec", {}))
+
     # https://pubs.vmware.com/vfabric51/topic/com.vmware.vfabric.rabbitmq.2.8/rabbit-web-docs/uri-spec.html
     uri = "amqp://{user}:{pass}@{host}:{port}/{vhost}".format(**uri_spec)
     #uri = "amqp://{user}:{pass}@{host}:{port}/".format(**uri_spec)
@@ -77,7 +77,7 @@ def main():
                                   exchange=ans_ex_name,
                                   routing_key=ans_rkey))
     
-    print("consume on queue: {vhost}/{in_queue}; provided results to queue: {vhost}/{out_queue}".format(in_queue=queue_name, out_queue=answer_queue_name, vhost=args.mode))
+    print("consume on queue: {vhost}/{in_queue}; provided results to queue: {vhost}/{out_queue}".format(in_queue=queue_name, out_queue=answer_queue_name, vhost=uri_spec["vhost"]))
     
     receive_promise = client.basic_consume(queue=queue_name, prefetch_count=cfg["queue_limit"])
     while 1:

@@ -1,0 +1,24 @@
+FROM alpine:3.7
+
+# GET BASH
+RUN apk add --no-cache bash gawk sed grep bc coreutils && ln -sf /bin/bash /bin/sh
+
+# GET PYTHON
+RUN apk add --no-cache python && \
+    python -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip install --upgrade pip setuptools && \
+    rm -r /root/.cache
+
+ENV HOME /worker
+
+RUN mkdir -p /worker
+COPY . /worker
+WORKDIR /worker
+RUN python setup.py install
+
+ENTRYPOINT ["./rabbitcookie_entry.sh"]
+
+CMD ["py_worker", "cfgs/pw_stub.yaml"]
+
+

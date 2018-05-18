@@ -19,7 +19,7 @@ PACKAGES = ["wxxie_workers"]
 # dependencies
 INSTALL_REQUIRES = [
     "puka==0.0.7",
-    "opencv-python"
+    "pyyaml"
 ]
 TESTS_REQUIRES = []
 

@@ -1,23 +1,47 @@
-development指导
+新的development指导
 ------------
 
-### 环境变量
+### 依赖安装
 
-现在的代码里, 在不同的mode下运行, 会读一些环境变量; 环境变量列表和解释见 [`sample_env.sh`](./sample_env.sh)
+Ubuntu下可以直接运行脚本`install_deps.sh`, 也可以一步一步按照下面来:
 
-### 运行API dev server
+安装docker, copied from [官方指导](https://docs.docker.com/install/linux/docker-ce/ubuntu/#os-requirements)
+```
+sudo apt-get remove docker docker-engine docker.io
+sudo apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-commonsudo ap
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
+   "deb [arch=amd64] https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+sudo apt-get update
+sudo apt-get install docker-ce
+```
 
-**依赖**
+安装docker-compose:
+```
+sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
 
-* 安装mysql, node, npm等;
-* ``mysql -u root -p < scripts/create_database.sql``: 把用于development和test的数据库以及账户创建; 数据库链接的配置在``src/config/database.js``;
-* ``npm install -g grunt-cli``
-* ``npm install`` 安装项目依赖;
+### build image and bring up the services
 
-**运行**
+```
+cp envs/dev.env envs/dev.env.local
+```
+并且修改envs/dev.local里面的一些配置, 比如rabbitmq的COOKIE, jwt secret等.
 
-* ``NODE_ENV=development grunt database``: 初始化数据库: 建立表格, 插入实验数据;
-* ``WXXIE_NOWECHAT=1 grunt dev``: 运行development server; ``WXXIE_NOWECHAT``解释见 [`sample_env.sh`](./sample_env.sh)
+一次性的build一个带有mysql client和node.js的ubuntu image. 把五个service: db, rabbitmq, python worker, result service, webapp都启动起来. webapp会在前台启动
+```
+npm install
+sudo bash ./build_dev_env.sh
+```
+
+如果这是第一次运行, 需要给数据库插入数据:
+```
+# create tables and insert data
+sudo WXXIE_MODE=dev docker-compose run webapp grunt database
+```
 
 ### 测试server API的方法
 
@@ -63,7 +87,33 @@ AssertionError: Do not success get the token
 
 除此之外的其它的参数都是传给httpie的, 所以, 可以看一眼 [httpie](https://github.com/jakubroztocil/httpie) 的文档了解更多的`httpie`的用法.
 
+### 开发
+
+默认dev模式, webapp service里运行的grunt watch plugin会监听文件系统修改, 在有修改时重新build运行, 所以编辑源码文件, 保存之后就可以一边测试, 不需要重启服务.
+
 API
 ------------
 
 见[API文档](new_api.md)
+
+
+已废弃的development指导
+------------
+
+### 环境变量
+
+现在的代码里, 在不同的mode下运行, 会读一些环境变量; 环境变量列表和解释见 [`sample_env.sh`](./sample_env.sh)
+
+### 运行API dev server
+
+**依赖**
+
+* 安装mysql, node, npm等;
+* ``mysql -u root -p < scripts/create_database.sql``: 把用于development和test的数据库以及账户创建; 数据库链接的配置在``src/config/database.js``;
+* ``npm install -g grunt-cli``
+* ``npm install`` 安装项目依赖;
+
+**运行**
+
+* ``NODE_ENV=development grunt database``: 初始化数据库: 建立表格, 插入实验数据;
+* ``WXXIE_NOWECHAT=1 grunt dev``: 运行development server; ``WXXIE_NOWECHAT``解释见 [`sample_env.sh`](./sample_env.sh)
