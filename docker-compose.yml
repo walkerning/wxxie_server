@@ -68,6 +68,8 @@ services:
     links:
       - rabbitmq
       - db
+    ports:
+      - "3000:3000"
 
 volumes:
   mysql-data: {}

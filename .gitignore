@@ -171,3 +171,5 @@ secret*
 envs/*.env.local
 envs/*.env.export
 models/
+
+legacy/
