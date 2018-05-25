@@ -6,13 +6,14 @@ var db = require("../data").db;
 var schema = require("../data").schema;
 var validation = require("../data").validation;
 var errors = require("../errors");
-var logging = require("../logging")
-
+var logging = require("../logging");
+const ezFetch = require('bookshelf-ez-fetch');
 var bookshelfInst;
 
 bookshelfInst = bookshelf(db);
 bookshelfInst.plugin("registry");
 bookshelfInst.plugin("pagination");
+bookshelfInst.plugin(ezFetch());
 
 // Helpers
 function _getJSONAttrList(json, attrName) {
@@ -198,6 +199,35 @@ bookshelfInst.Collection = bookshelfInst.Collection.extend({
     if (options !== undefined) {
       var fetchOpt = options.fetchOptions;
     }
+      console.log(query);
+       if((query.offset !== 0) || (query.limit != 10)){
+	  return this.forge()
+	      .query({
+		  where: _.pick(query, this.queriableAttributes())
+	      })
+	      .fetchPage({
+		  pageSize: query.limit,
+		  page: query.offset
+	      });
+      }
+      if((query.sort_by != undefined) && query.order != undefined){
+	       return this.forge()
+		   .query(function(qb){
+		       qb.orderBy(query.sort_by, query.order);
+		   }).fetch({
+		       where: _.pick(query, this.queriableAttributes())
+		   });
+      }
+      //range边界用‘,’相隔
+      if(query.range != undefined){
+	  var bottom = query.range.split(',')[0];
+	  var top = query.range.split(',')[1];
+	  console.log("bottom:"+bottom+"top:"+top);
+	  return this.forge()
+	      .query(function(qb){
+		  qb.where('id' ,'>=' ,bottom).andWhere('id' ,'<=' ,top);
+	      }).fetch(fetchOpt);
+      }
     return this.forge()
       .query({
         where: _.pick(query, this.queriableAttributes())

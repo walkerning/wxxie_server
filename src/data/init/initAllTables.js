@@ -15,7 +15,16 @@ var initData = {
       openId: "____afakeopenid____",
       email: "root@localhost.com",
       phone: "18888888888"
-    }
+    },
+      {
+	  userName: "xiaomin",
+	  nickName: "xiaominNickName",
+	  password: "XIAOMPASSWORD",
+	  gender: 2,
+	  openId: "____xiaominopenid____",
+	  email: "xiaomin@163.com",
+	  phone: "18787878770"
+      }
   ],
   Permission: [
     {
