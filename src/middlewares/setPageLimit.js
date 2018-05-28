@@ -1,5 +1,3 @@
-var _ = require("lodash");
-
 module.exports = function setPageLimit(dlimit = 10, maxLimit = 100) {
     return function(req, res, next) {
 	var query = req.query;

@@ -1,10 +1,11 @@
 var l = require("lodash");
 
 var modelNames = [
-  "users",
-  "tasks",
+    "users",
+    "tasks",
     "permissions",
-    "brands"
+    "brands",
+    "shoe_models"
 ];
 
 exports = module.exports;

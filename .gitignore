@@ -170,6 +170,5 @@ secret*
 .erlang.cookie
 envs/*.env.local
 envs/*.env.export
-models/
 
 legacy/

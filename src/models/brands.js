@@ -10,15 +10,45 @@ var errors = require("../errors");
 var Brand = bookshelfInst.Model.extend({
     tableName:"brands",
 
-    defaults: {
-	quota: 50
-    }
+    shoemodels: function() {
+	return this.hasMany("ShoeModel");
+    },
 
+    getShoeModel: function(shoe_modelId) {
+	return this.related("shoemodels")
+	    .query({ where: { "id": shoe_modelId } })
+	    .fetchOne()
+	    .then(function(c) {
+		if (c == null) {
+		    return Promise.reject(new errors.NotFoundError());
+		}
+		return c;
+	    });
+    }
+}, {
+    getShoeModel: function(brand_id, shoe_modelId, return_both=false) {
+	return this.getById(brand_id, {
+	    fetchOptions: {
+		withRelated: ["shoemodels"]
+	    }
+	})
+	    .then((br) => {
+		return br.getShoeModel(shoe_modelId)
+		    .then((sm) => {
+			if (return_both) {
+			    return [br, sm];
+			} else {
+			    return sm;
+			}
+		    });
+	    });
+    }
 });
 
 var Brands = bookshelfInst.Collection.extend({
     model: Brand
-},{});
+}, {
+});
 
 module.exports = {
     Brand: bookshelfInst.model("Brand",Brand),
