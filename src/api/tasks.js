@@ -27,13 +27,20 @@ function addTask(req, res, next) {
         return Promise.reject(new errors.ValidationError({ message: `Quota exceed, you can only create ${quota} (now ${now_num})` }))
       }
     })
-    .then(() => {
-      return models.Task.create({
-        user_id: req.params.userId,
-        meta_tag: req.body["meta_tag"],
-        state: "incomplete",
-        task_name: "Task untitled" // default task name
-      });
+	.then(() => {
+	    var body = req.body;
+	    body = _.assign(body, {
+		meta_tag: "v1",
+		user_id: req.params.userId,
+		state: "incomplete",
+		task_name: req.body["task_name"] || "Task untitled", // default task name
+		log: null,
+		answer: null,
+		run_time: null,
+		start_time: null,
+		finish_time: null
+	    });
+	    return models.Task.create(body);
     })
     .then(function(task) {
       res.status(201).json(task.toClientJSON());
@@ -59,9 +66,28 @@ function updateTask(req, res, next) {
 }
 
 function updateTaskAdmin(req, res, next) {
+	return models.User.getTaskAndUser(req.params.userId, req.params.taskId)
+		.then((r) => {
+			var [user, task] = r;
+			return task.update(req.body, req.user)
+				.then(() => {
+					return task.fetch()
+						.then(() => {
+							res.status(200).json(task.toClientJSON());
+						});
+				});
+		});
 }
 
 function deleteTask(req, res, next) {
+	return models.User.getTaskAndUser(req.params.userId, req.params.taskId)
+		.then((sm) => {
+			var [user, task] = sm;
+			return task.destroy()
+				.then(() => {
+					res.status(200).json({}).end();
+				});
+		});
 }
 
 function runTask(req, res, next) {
@@ -182,6 +208,10 @@ function downloadTaskFile(req, res, next) {
 }
 
 function listAllTasks(req, res, next) {
+    return models.Tasks.getByQuery(req.query)
+        .then((col) => {
+	    res.status(200).json(col.toClientJSON());
+	});
 }
 
 module.exports = {

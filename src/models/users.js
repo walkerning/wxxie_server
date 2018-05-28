@@ -137,7 +137,11 @@ var User = bookshelfInst.Model.extend({
 var Users = bookshelfInst.Collection.extend({
   model: User
 
-}, {});
+}, {
+	queriableAttributes: function queriableAttributes(){
+		return ["gender","city","province","country","quota"];
+	}
+});
 
 
 module.exports = {

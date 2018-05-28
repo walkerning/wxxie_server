@@ -48,6 +48,9 @@ var Brand = bookshelfInst.Model.extend({
 var Brands = bookshelfInst.Collection.extend({
     model: Brand
 }, {
+	queriableAttributes: function queriableAttributes(){
+		return ["state","supported_at","created_at","updated_at"];
+	}
 });
 
 module.exports = {

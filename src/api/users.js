@@ -27,6 +27,20 @@ function addUser(req, res, next) {
     });
 }
 
+function updateUser(req, res, next){
+    return models.User.getById(req.params.userId)
+	.then((r) => {
+	    var user = r;
+	    return user.update(req.body, req.user)
+		.then(() => {
+		    return user.fetch()
+			.then(() => {
+			    res.status(200).json(user.toClientJSON());
+			});
+		});
+	});
+}
+
 function listUsers(req, res, next) {
   return models.Users.getByQuery(req.query)
     .then((col) => {
@@ -61,10 +75,11 @@ function getTask(req, res, next) {
 
 
 module.exports = {
-  infoMe,
-  infoUser,
-  addUser,
-  listTasks,
-  getTask,
-  listUsers
+    infoMe,
+    infoUser,
+    addUser,
+    updateUser,
+    listTasks,
+    getTask,
+    listUsers
 };

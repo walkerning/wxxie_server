@@ -10,9 +10,13 @@ var errors = require("../errors");
 
 var Task = bookshelfInst.Model.extend({
   tableName: "tasks",
-  
+
   user: function() {
     return this.beglongsTo("User", "user_id");
+  },
+
+  shoemodel: function() {
+    return this.beglongsTo("ShoeModel", "shoe_model_id");
   },
 
   permittedAttributes: function permittedAttribute() {
@@ -42,9 +46,24 @@ var Task = bookshelfInst.Model.extend({
       // TODO: multi-language error information?
       return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because it has been already arranged for running or has finished." }));
     }
-    if (!this.get("shoe_model")) {
-      return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'shoe_model' field is needed." }));
+    if (!this.get("shoe_model_id")) {
+      return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'shoe_model_id' field is needed." }));
     }
+		if (this.get("user_id")) {
+			return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'user_id' field is needed." }));
+		}
+		if (this.get("task_name")) {
+			return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'task_name' field is needed." }));
+		}
+		if (this.get("type")) {
+			return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'type' field is needed." }));
+		}
+		if (this.get("buy_type")) {
+			return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'buy_type' field is needed." }));
+		}
+		if (this.get("buy_name")) {
+			return Promise.reject(new errors.ValidationError({ message: "Cannot run this task, because 'buy_name' field is needed." }));
+		}
     // check for filesystem existence. 
     // TODO: different check for different meta_tag or shoe model maybe. Move this check utility to meta handler.
     var fs_path = this.imageDir();
@@ -65,7 +84,7 @@ var Tasks = bookshelfInst.Collection.extend({
 
 }, {
   queriableAttributes: function queriableAttributes() {
-    return [];
+    return ["shoe_model_id", "state", "type", "buy_type"];
   }
 });
 

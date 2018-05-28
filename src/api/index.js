@@ -38,6 +38,8 @@ apiRouter.get("/users", permit(["user"]), setPageLimit(...(apiCfg.pagination.use
 
 apiRouter.post("/users", permit(["user"]), catchError(users.addUser));
 
+apiRouter.put("/users/:userId", permit(["user"]),catchError(users.updateUser));
+
 apiRouter.get("/users/:userId/tasks", permit(["me"], ["user", "task"]), setPageLimit(...(apiCfg.pagination.users_tasks||[])), catchError(users.listTasks));
 
 apiRouter.get("/users/:userId/tasks/:taskId", permit(["me"], ["user", "task"]), catchError(users.getTask));

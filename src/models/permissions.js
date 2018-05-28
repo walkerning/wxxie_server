@@ -58,7 +58,7 @@ var Permissions = bookshelfInst.Collection.extend({
 }, {
   queriableAttributes: function queriableAttributes() {
     return ["id",
-      "name"];
+						"name","created_at","updated_at"];
   },
 });
 
